@@ -1,47 +1,98 @@
 const express = require('express');
+const dbConfig = require('../data/dbConfig');
 
-const router = express.Router();
+const db = require('./userDb.js')
 
-router.post('/', (req, res) => {
-  // do your magic!
+const user = express.Router();
+
+user.post('/', validateUserData(), (req, res, next) => {
+  db.insert(req.body)
+  .then(user => {
+    res.status(201).json(req.body)
+  })
+  .catch(err => next(err))
 });
 
-router.post('/:id/posts', (req, res) => {
-  // do your magic!
+user.post('/:id/posts', validateUserId(),validateUserData(), (req, res, next) => {
+  db.insert(req.body)
+  .then(() => {
+    res.status(201).json(req.body)
+  })
+  .catch(err => next(err))
 });
 
-router.get('/', (req, res) => {
-  // do your magic!
+user.get('/', (req, res, next) => {
+  db.get()
+  .then(users => {
+    res.status(200).json(users)
+  })
+  .catch(err => next(err))
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+user.get('/:id', (req, res, next) => {
+  db.getById(req.params.id)
+  .then(user => {
+    res.status(200).json(user)
+  })
+  .catch(err => next(err))
 });
 
-router.get('/:id/posts', (req, res) => {
-  // do your magic!
+user.get('/:id/posts', (req, res, next) => {
+  db.getUserPosts(req.params.id)
+  .then(posts => {
+    res.status(200).json(posts)
+  })
+  .catch(err => next(err))
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+user.delete('/:id', validateUserId(), (req, res, next) => {
+  db.remove(req.params.id)
+  .then(() => res.sendStatus(204))
+  .catch(err => next(err))
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+user.put('/:id', validateUserId(), validateUserData(), (req, res, next) => {
+  db.update(req.params.id, req.body)
+  .then(() => {
+    res.status(200).json(req.body)
+  })
+  .catch(err => next(err))
 });
 
 //custom middleware
 
-function validateUserId(req, res, next) {
-  // do your magic!
+function validateUserId() {
+  return(req, res, next) => {
+    db.getById(req.params.id)
+    .then(() => {
+      if(user) {
+        next()
+      } else {
+        res.status(404).json({error: "user not found"})
+      }
+    })
+  }
 }
 
-function validateUser(req, res, next) {
-  // do your magic!
+function validateUserData() {
+  return (req, res, next) => {
+    if(req.body.name) {
+      next()
+    }
+    else {
+      res.status(400).json({error: 'required field NAME missing'})
+    }
+  }
 }
 
-function validatePost(req, res, next) {
-  // do your magic!
+function validatePostData() {
+  return(req, res, next) => {
+    // if (...)
+  }
 }
 
-module.exports = router;
+
+module.exports = user;
+validateUserId
+validateUser
+validatePost

@@ -93,6 +93,3 @@ function validatePostData() {
 
 
 module.exports = user;
-validateUserId
-validateUser
-validatePost
